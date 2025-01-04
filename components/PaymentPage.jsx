@@ -153,7 +153,7 @@ const generateTransactionId = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md px-4 md:px-6"
       >
         <Card className="shadow-lg">
           <CardHeader>
@@ -211,7 +211,7 @@ const generateTransactionId = () => {
 function PaymentFailedPage() {
   return (
     <div className="container flex items-center justify-center min-h-screen">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md px-4 md:px-6">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold text-red-600">Payment Failed</CardTitle>
         </CardHeader>
@@ -254,7 +254,7 @@ function PaymentFailedPage() {
       (<>
         <div
          
-          className="w-full max-w-md">
+          className="w-full max-w-md px-4 md:px-6">
           <Card className="shadow-lg">
             <CardHeader className="text-center">
               <div
