@@ -14,27 +14,40 @@ export default function AddInvoiceForm({
   initialData, 
   isEditing = false 
 }) {
+  console.log(initialData);
+  
   const [plan, setPlan] = useState(initialData?.plan || '');
   const [clientName, setClientName] = useState(initialData?.clientName || '');
   const [clientAddress, setClientAddress] = useState(initialData?.clientAddress || '');
+  const [dueDate, setDueDate] = useState(initialData?.dueDate || '');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    
     const invoice = {
-      plan,
+      subscription_plan:plan,
       date: new Date().toISOString().split('T')[0],
-      paymentId: initialData?.paymentId || `PAY-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      paymentId:  `PAY-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
       status: initialData?.status || 'Pending',
       paymentStatus: initialData?.paymentStatus || 'Pending',
       clientName,
+      invoiceNumber:initialData?.invoiceNumber,
       clientAddress,
-      ...(initialData && { id: initialData.id }),
+      dueDate: new Date(dueDate).toISOString().split('T')[0],
+      ...initialData,
     };
+    console.log("in",invoice);
+
     onSubmit(invoice);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+     
+     <div>
+     <p>{initialData?.id}</p>
+     </div>
       <div>
         <Label htmlFor="plan">Plan</Label>
         <Select onValueChange={setPlan} defaultValue={plan}>
@@ -53,7 +66,11 @@ export default function AddInvoiceForm({
         <Input 
           id="clientName" 
           value={clientName} 
-          onChange={(e) => setClientName(e.target.value)}
+          onChange={(e) => {
+            console.log(e.target.value);
+            setClientName(e.target.value)
+            
+          }}
           required
         />
       </div>
@@ -63,6 +80,16 @@ export default function AddInvoiceForm({
           id="clientAddress" 
           value={clientAddress} 
           onChange={(e) => setClientAddress(e.target.value)}
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="dueDate">Due Date</Label>
+        <Input 
+          id="dueDate" 
+          type="date" 
+          value={dueDate} 
+          onChange={(e) => setDueDate(e.target.value)}
           required
         />
       </div>

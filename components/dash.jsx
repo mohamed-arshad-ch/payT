@@ -38,62 +38,23 @@ import { Switch } from '@/components/ui/switch';
 import { EditPlanModal } from '@/components/edit-plan-modal';
 import { encryptAmount } from '@/lib/utils';
 
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 
 
 
-const mockPlans = [
-    { id: '1', name: 'Basic Monthly', price: 9.99, features: ['Feature 1', 'Feature 2'], category: 'monthly', isActive: true },
-    { id: '2', name: 'Pro Monthly', price: 19.99, features: ['Feature 1', 'Feature 2', 'Feature 3'], category: 'monthly', isActive: false },
-    { id: '3', name: 'Basic Yearly', price: 99.99, features: ['Feature 1', 'Feature 2'], category: 'yearly', isActive: false },
-    { id: '4', name: 'Pro Yearly', price: 199.99, features: ['Feature 1', 'Feature 2', 'Feature 3'], category: 'yearly', isActive: false },
-  ]
+
+
 
 // Status options
 const statusOptions = ['Pending', 'Approved', 'Rejected', 'Refunded'];
 const paymentStatusOptions = ['Pending', 'Completed', 'Failed'];
 
-// Mock data for invoices
-const mockInvoices = [
-  { 
-    id: 'INV-001', 
-    plan: 'Basic', 
-    date: '2023-01-15', 
-    dueDate: '2023-02-14',
-    paymentId: 'PAY-001', 
-    amount: 110.00, 
-    status: 'Pending',
-    paymentStatus: 'Pending',
-    clientName: 'Hannah Morales',
-    clientAddress: '123 Street, City',
-    paymentLink: `${process.env.NEXT_PUBLIC_HOST_NAME}/pay?id=INV-001&planDemo=Gold&pt=${encryptAmount("110")}`,
-    paymentMethod: {
-      bankName: 'Borcelle Company',
-      accountNo: '1234567890'
-    }
-  },
-  { 
-    id: 'INV-002', 
-    plan: 'Premium', 
-    date: '2023-01-16', 
-    dueDate: '2023-02-15',
-    paymentId: 'PAY-002', 
-    amount: 199.99, 
-    status: 'Approved',
-    paymentStatus: 'Completed',
-    clientName: 'John Doe',
-    clientAddress: '456 Avenue, Town',
-    paymentLink:`${process.env.NEXT_PUBLIC_HOST_NAME}/pay?id=INV-001&planDemo=Gold&pt=${encryptAmount("199")}`,
-    paymentMethod: {
-      bankName: 'Borcelle Company',
-      accountNo: '1234567890'
-    }
-  },
-];
 
 function DashPage() {
-  const [invoices, setInvoices] = useState(mockInvoices);
-  const [plans, setPlans] = useState(mockPlans);
+  const [invoices, setInvoices] = useState([]);
+  const [plans, setPlans] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddInvoiceOpen, setIsAddInvoiceOpen] = useState(false);
   const [isAddPlanOpen, setIsAddPlanOpen] = useState(false);
@@ -119,34 +80,94 @@ function DashPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleAddInvoice = (newInvoice) => {
-    const selectedPlan = plans.find(p => p.name === newInvoice.plan);
-    const invoice = {
-      ...newInvoice,
-      id: `INV-${invoices.length + 1}`.padStart(7, '0'),
-      amount: selectedPlan?.price || 0,
-      paymentMethod: {
-        bankName: 'Borcelle Company',
-        accountNo: '1234567890'
-      },
-      paymentLink: `${process.env.NEXT_PUBLIC_HOST_NAME}/pay?id=INV-${`INV-${invoices.length + 1}`.padStart(7, '0')}&planDemo=${selectedPlan.name}&pt=${encryptAmount(selectedPlan?.price) || encryptAmount(0)}`,
+  const handleAddInvoice = async (newInvoice) => {
+    console.log(newInvoice);
+    console.log(plans);
+    
+    const selectedPlan = plans.find(p => p.name === newInvoice.subscription_plan);
+    const invoiceNumber = `INV-${(invoices.length + 1).toString().padStart(3, '0')}`;
+    const paymentLink = `${process.env.NEXT_PUBLIC_HOST_NAME}/pay?id=${invoiceNumber}&planDemo=${selectedPlan.name}&pt=${encryptAmount(selectedPlan?.price) || encryptAmount(0)}`;
+
+    try {
+      console.log("selectedPlan",selectedPlan);
+      
+      const user_token = Cookies.get("user_token");
+     const res =  await axios.post('http://localhost:1337/api/invoices', {
+        data: {
+          invoiceNumber,
+          subscription_plan: selectedPlan.id,
+          dueDate:  new Date(newInvoice.dueDate).toISOString().split('T')[0] ,
+          clientName: newInvoice.clientName,
+          clientAddress: newInvoice.clientAddress,
+          paymentLink,
+          publishedAt:new Date(),
+          paymentId:newInvoice.paymentId
+        },
+      }, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+
+      console.log(res.data);
+      
+      // Refresh the invoice list
+      fetchInvoices();
+      setIsAddInvoiceOpen(false);
+    } catch (error) {
+      console.error('Error adding invoice:', error);
+    }
+  };
+
+  const handleEditInvoice = async (updatedInvoice) => {
+    console.log(updatedInvoice,"updatedInvoice");
+    
+    try {
+      const user_token = Cookies.get("user_token");
+      const selectedPlan = plans.find(p => p.name === updatedInvoice.subscription_plan);
+      await axios.put(`http://localhost:1337/api/invoices/${updatedInvoice.documentId}`, {
+        data: {
+          subscription_plan: selectedPlan.id, // Assuming planId is part of updatedInvoice
+          dueDate: new Date(updatedInvoice.dueDate).toISOString().split('T')[0] ,
+          clientName: updatedInvoice.clientName,
+          clientAddress: updatedInvoice.clientAddress,
+        },
+      }, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+
+      // Update local state
+      fetchInvoices()
+      setIsEditInvoiceOpen(false);
+      setSelectedInvoice(null);
+    } catch (error) {
+      console.error('Error updating invoice:', error);
+    }
+  };
+
+  const handleAddPlan = async (newPlan) => {
+    try {
      
-    };
-    setInvoices([...invoices, invoice]);
-    setIsAddInvoiceOpen(false);
-  };
-
-  const handleEditInvoice = (updatedInvoice) => {
-    setInvoices(invoices.map(invoice => 
-      invoice.id === updatedInvoice.id ? updatedInvoice : invoice
-    ));
-    setIsEditInvoiceOpen(false);
-    setSelectedInvoice(null);
-  };
-
-  const handleAddPlan = (newPlan) => {
-    setPlans([...plans, { ...newPlan, id: plans.length + 1 }]);
-    setIsAddPlanOpen(false);
+      const user_token = Cookies.get("user_token");
+      await axios.post('http://localhost:1337/api/subscription-plans', {
+        data:{
+          "name":newPlan.name,
+          "price":newPlan.price,
+          "features":newPlan.features,
+          "category":newPlan.category
+        },
+      }, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+      fetchPlans();
+      setIsAddPlanOpen(false);
+    } catch (error) {
+      console.error('Error adding plan:', error);
+    }
   };
 
   const handleDownloadPDF = (invoice) => {
@@ -260,12 +281,28 @@ function DashPage() {
     setEditingPlan(null)
   }
 
-  const savePlanChanges = (updatedPlan) => {
-    setPlans(prevPlans =>
-      prevPlans.map(plan =>
-        plan.id === updatedPlan.id ? updatedPlan : plan
-      )
-    )
+  const savePlanChanges = async (updatedPlan) => {
+    try {
+      const user_token = Cookies.get("user_token");
+     
+      await axios.put(`http://localhost:1337/api/subscription-plans/${updatedPlan.documentId}`, {
+        data: {
+          name:updatedPlan.name,
+          "price":updatedPlan.price,
+        "features":updatedPlan.features,
+        "category":updatedPlan.category
+
+        },
+      }, {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+      fetchPlans();
+      closeEditModal();
+    } catch (error) {
+      console.error('Error updating plan:', error);
+    }
   }
 
   const financialData = {
@@ -286,13 +323,67 @@ function DashPage() {
   const [data, setData] = useState(financialData)
   const [payments, setPayments] = useState(latestPayments)
 
+  const fetchInvoices = async () => {
+    try {
+      const user_token = Cookies.get("user_token");
+      const response = await axios.get('http://localhost:1337/api/invoices?populate=*', {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+      const fetchedInvoices = response.data.data.map(invoice => ({
+        invoiceNumber: invoice.invoiceNumber,
+        id: invoice.id,
+        plan: invoice.subscription_plan.name,
+        date: new Date(invoice.createdAt).toLocaleDateString(),
+        dueDate: new Date(invoice.dueDate).toISOString().split('T')[0] ,
+        paymentId: invoice.paymentId,
+        amount: invoice.subscription_plan.price,
+        documentId:invoice.documentId,
+        status: invoice.transactionStatus,
+        paymentStatus: invoice.paymentStatus,
+        clientName: invoice.clientName,
+        clientAddress: invoice.clientAddress,
+        paymentLink: invoice.paymentLink,
+        
+      }));
+      setInvoices(fetchedInvoices);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+    }
+  };
+
   // Simulating data fetching
   useEffect(() => {
-    // In a real application, you would fetch data from an API here
-    setData(financialData)
-    setPayments(latestPayments)
-    setInvoices(invoices)
-  }, [])
+    // Fetch invoices from the API
+   
+    fetchInvoices();
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+            const user_token = Cookies.get("user_token");
+
+      const response = await axios.get('http://localhost:1337/api/subscription-plans', {
+        headers: {
+          Authorization: `Bearer ${user_token}`,
+        },
+      });
+      setPlans(response.data.data);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    }
+  };
+
+  const isDueDateClose = (dueDate) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = Math.abs(due - today);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 7; // Highlight if due date is within 7 days
+  };
+  
   return (
     <div className="container mx-auto py-10 max-w-6xl px-4 md:px-6">
       <div className="flex justify-between items-center mb-6">
@@ -404,7 +495,10 @@ function DashPage() {
         <Table>
           <TableHeader>
             <TableRow>
+            
+
               <TableHead>Invoice ID</TableHead>
+              <TableHead>Due Date</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Payment ID</TableHead>
@@ -416,8 +510,12 @@ function DashPage() {
           </TableHeader>
           <TableBody>
             {invoices.map((invoice) => (
-              <TableRow key={invoice.id}>
-                <TableCell className="font-medium">{invoice.id}</TableCell>
+              <TableRow 
+                key={invoice.id} 
+               
+              >
+                <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                <TableCell className="font-medium">{invoice.dueDate}</TableCell>
                 <TableCell>{invoice.plan}</TableCell>
                 <TableCell>{invoice.date}</TableCell>
                 <TableCell>{invoice.paymentId}</TableCell>
@@ -490,20 +588,22 @@ function DashPage() {
         </Table>
       </div>
         </TabsContent>
+
+        
         <TabsContent value="plans" className="mt-6">
         <div>
      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockPlans.map((plan) => (
+        {plans.map((plan) => (
            <Card key={plan.id} className={`${plan.isActive ? 'border-primary' : ''}`}>
            <CardHeader>
              <div className="flex justify-between items-center">
-               <CardTitle>{plan.title}</CardTitle>
+               <CardTitle>{plan.name}</CardTitle>
                <Button variant="ghost" size="icon" onClick={() => openEditModal(plan)}>
                  <Edit className="h-4 w-4" />
                </Button>
              </div>
-             <CardDescription>${plan.price}/{plan.category === 'monthly' ? 'month' : 'year'}</CardDescription>
+             <CardDescription>${plan.price}/{plan.category}</CardDescription>
            </CardHeader>
            <CardContent>
              <ul className="list-disc list-inside">
@@ -577,13 +677,18 @@ function AddPlanForm({ onSubmit }) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [features, setFeatures] = useState('');
+  const [category, setCategory] = useState('daily');
 
+  const handleCategoryChange = (value)=>{
+    setCategory(value)
+  }
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({
       name,
       price: parseFloat(price),
       features: features.split('\n').filter(f => f.trim()),
+      category
     });
   };
 
@@ -607,6 +712,25 @@ function AddPlanForm({ onSubmit }) {
           onChange={(e) => setPrice(e.target.value)}
           required
         />
+      </div>
+      <div>
+      <Select 
+                    onValueChange={(value) => handleCategoryChange(value)}
+                    defaultValue={category}
+                  >
+                    <SelectTrigger className="w-[130px]">
+                      <SelectValue>{"Daily"}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      
+                        <SelectItem key={1} value={"daily"}>{"Daily"}</SelectItem>
+                        <SelectItem key={4} value={"weekly"}>{"Weekly"}</SelectItem>
+                        <SelectItem key={2} value={"monthly"}>{"Monthly"}</SelectItem>
+                        <SelectItem key={3} value={"yearly"}>{"Yearly"}</SelectItem>
+                        
+                      
+                    </SelectContent>
+                  </Select>
       </div>
       <div>
         <Label htmlFor="features">Features (one per line)</Label>

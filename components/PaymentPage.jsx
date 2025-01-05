@@ -284,13 +284,7 @@ function PaymentFailedPage() {
                 onClick={() => alert('Downloading receipt...')}>
                 <DownloadIcon className="mr-2 h-4 w-4" /> Download Receipt
               </Button>
-              <Link href="/dashboard" className="w-full">
-                <Button
-                  variant="outline"
-                  className="w-full border-green-600 text-green-600 hover:bg-green-50">
-                  <LayoutDashboardIcon className="mr-2 h-4 w-4" /> Go to Dashboard
-                </Button>
-              </Link>
+             
             </CardFooter>
           </Card>
         </div>

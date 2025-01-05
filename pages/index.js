@@ -6,30 +6,33 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Cookies from "js-cookie";
 import CryptoJS from "crypto-js";
+import axios from "axios";
 
 export default function Home() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
-  // Encrypt and store cookie
-  const encryptData = (data) => {
-    const encrypted = CryptoJS.AES.encrypt(data, "Mcodev@123").toString();
-    return encrypted;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (username === 'Mach' && password === 'Mcodev@123') {
-      // Encryption logic
-      const encryptedToken = encryptData(username);
-      // Store in cookie, set expiration to 1 hour
-      Cookies.set("user_token", encryptedToken, { expires: 1 / 24 });
+      try {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/local`, {
+          identifier: username,
+          password: password
+        });
 
-      // Redirect to home page
-      router.push('/invoices');
+        const { jwt } = response.data;
+        // Store JWT in cookie, set expiration to 1 hour
+        Cookies.set("user_token", jwt, { expires: 1 / 24 });
+
+        // Redirect to home page
+        router.push('/invoices');
+      } catch (error) {
+        console.error('Login failed:', error);
+        alert('Invalid username or password');
+      }
     } else {
-      // Failed login
       alert('Invalid username or password');
     }
   };
