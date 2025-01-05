@@ -4,8 +4,8 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const razorpay = new Razorpay({
-        key_id: "rzp_test_PxwSSyGr04P2ms",
-        key_secret: "4IfHpnZjDRw5jOvxFN5V5t3S",
+        key_id: process.env.RAZOR_PAY_KEY_ID,
+        key_secret: process.env.RAZOR_PAY_KEY_SECRET,
       });
 
    

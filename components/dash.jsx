@@ -66,7 +66,7 @@ const mockInvoices = [
     paymentStatus: 'Pending',
     clientName: 'Hannah Morales',
     clientAddress: '123 Street, City',
-    paymentLink: `http://localhost:3000/pay?id=INV-001&planDemo=Gold&pt=${encryptAmount("110")}`,
+    paymentLink: `${process.env.HOST_NAME}/pay?id=INV-001&planDemo=Gold&pt=${encryptAmount("110")}`,
     paymentMethod: {
       bankName: 'Borcelle Company',
       accountNo: '1234567890'
@@ -83,7 +83,7 @@ const mockInvoices = [
     paymentStatus: 'Completed',
     clientName: 'John Doe',
     clientAddress: '456 Avenue, Town',
-    paymentLink:`http://localhost:3000/pay?id=INV-001&planDemo=Gold&pt=${encryptAmount("199")}`,
+    paymentLink:`${process.env.HOST_NAME}/pay?id=INV-001&planDemo=Gold&pt=${encryptAmount("199")}`,
     paymentMethod: {
       bankName: 'Borcelle Company',
       accountNo: '1234567890'
@@ -129,7 +129,7 @@ function DashPage() {
         bankName: 'Borcelle Company',
         accountNo: '1234567890'
       },
-      paymentLink: `http://localhost:3000/pay?id=INV-${`INV-${invoices.length + 1}`.padStart(7, '0')}&planDemo=${selectedPlan.name}&pt=${encryptAmount(selectedPlan?.price) || encryptAmount(0)}`,
+      paymentLink: `${process.env.HOST_NAME}/pay?id=INV-${`INV-${invoices.length + 1}`.padStart(7, '0')}&planDemo=${selectedPlan.name}&pt=${encryptAmount(selectedPlan?.price) || encryptAmount(0)}`,
       dueDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0]
     };
     setInvoices([...invoices, invoice]);
