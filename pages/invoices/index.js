@@ -1,3 +1,4 @@
+'use client';
 import DashPage from '@/components/dash';
 import { withAuth } from '@/lib/withAuth';
 

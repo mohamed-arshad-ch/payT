@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
     try {
       // Step 1: Generate Expected Signature
-      const key_secret = process.env.RAZOR_PAY_KEY_SECRET; // Replace with your Razorpay Key Secret
+      const key_secret = process.env.NEXT_PUBLIC_RAZOR_PAY_KEY_SECRET; // Replace with your Razorpay Key Secret
       const generatedSignature = crypto
         .createHmac('sha256', key_secret)
         .update(`${razorpay_order_id}|${razorpay_payment_id}`)
