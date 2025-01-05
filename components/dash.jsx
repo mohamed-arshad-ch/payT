@@ -92,7 +92,7 @@ function DashPage() {
       console.log("selectedPlan",selectedPlan);
       
       const user_token = Cookies.get("user_token");
-     const res =  await axios.post('http://localhost:1337/api/invoices', {
+     const res =  await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/invoices`, {
         data: {
           invoiceNumber,
           subscription_plan: selectedPlan.id,
@@ -125,7 +125,7 @@ function DashPage() {
     try {
       const user_token = Cookies.get("user_token");
       const selectedPlan = plans.find(p => p.name === updatedInvoice.subscription_plan);
-      await axios.put(`http://localhost:1337/api/invoices/${updatedInvoice.documentId}`, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/invoices/${updatedInvoice.documentId}`, {
         data: {
           subscription_plan: selectedPlan.id, // Assuming planId is part of updatedInvoice
           dueDate: new Date(updatedInvoice.dueDate).toISOString().split('T')[0] ,
@@ -151,7 +151,7 @@ function DashPage() {
     try {
      
       const user_token = Cookies.get("user_token");
-      await axios.post('http://localhost:1337/api/subscription-plans', {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/subscription-plans`, {
         data:{
           "name":newPlan.name,
           "price":newPlan.price,
@@ -285,7 +285,7 @@ function DashPage() {
     try {
       const user_token = Cookies.get("user_token");
      
-      await axios.put(`http://localhost:1337/api/subscription-plans/${updatedPlan.documentId}`, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/subscription-plans/${updatedPlan.documentId}`, {
         data: {
           name:updatedPlan.name,
           "price":updatedPlan.price,
@@ -326,7 +326,7 @@ function DashPage() {
   const fetchInvoices = async () => {
     try {
       const user_token = Cookies.get("user_token");
-      const response = await axios.get('http://localhost:1337/api/invoices?populate=*', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/invoices?populate=*`, {
         headers: {
           Authorization: `Bearer ${user_token}`,
         },
@@ -365,7 +365,7 @@ function DashPage() {
     try {
             const user_token = Cookies.get("user_token");
 
-      const response = await axios.get('http://localhost:1337/api/subscription-plans', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/subscription-plans`, {
         headers: {
           Authorization: `Bearer ${user_token}`,
         },
