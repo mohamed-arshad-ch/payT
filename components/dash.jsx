@@ -36,7 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { EditPlanModal } from '@/components/edit-plan-modal';
-import { encryptAmount } from '@/lib/utils';
+import { dateFormatToDay, encryptAmount } from '@/lib/utils';
 
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -171,102 +171,132 @@ function DashPage() {
   };
 
   const handleDownloadPDF = (invoice) => {
+
+    console.log("iiii",invoice);
+    
     const doc = new jsPDF();
-    
-    // Add background pattern (top)
-    doc.setFillColor(0, 43, 150); // #002B96
-    doc.rect(0, 0, 210, 60, 'F');
-    
-    // Add diagonal stripes pattern
-    // for (let i = 0; i < 5; i++) {
-    //   doc.setFillColor(255, 255, 255, 0.1);
-    //   doc.rect(20 + (i * 30), 0, 15, 60, 'F');
-    // }
-
-    // Add company logo
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.text('MCODEV', 150, 30);
-    doc.setFontSize(14);
-    doc.text('COMPANY', 150, 40);
-
-    // Add invoice title
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(40);
-    doc.text('INVOICE', 105, 90, { align: 'center' });
-
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text(`${invoice.id}`, 105, 97, { align: 'center' });
-    
-    // Add date
-    doc.setFontSize(12);
-    doc.text(`Date : ${invoice.date}`, 105, 103, { align: 'center' });
-
-    // Add invoice details
-    doc.setFontSize(14);
-    doc.text('INVOICE TO:', 20, 120);
-    doc.setFontSize(20);
-    doc.text(invoice.clientName, 20, 130);
-
+      // Add background pattern (top)
+      doc.setFillColor(0, 43, 150); // #002B96
+      doc.rect(0, 0, 210, 60, 'F');
+      
+      // Add diagonal stripes pattern
+      // for (let i = 0; i < 5; i++) {
+      //   doc.setFillColor(255, 255, 255, 0.1);
+      //   doc.rect(20 + (i * 30), 0, 15, 60, 'F');
+      // }
    
+     // Add company logo
+   doc.setTextColor(255, 255, 255);
+   doc.setFontSize(24);
+   doc.text('MCODEV', 105, 30,{ align: 'center' });
+   doc.setFontSize(10);
+   doc.text('Coldest Place On Ice', 105, 40,{ align: 'center' });
 
-    // Add plan details table
-    doc.autoTable({
-      startY: 150,
-      head: [['Description', 'Qty', 'Price', 'Total']],
-      body: [[
-        invoice.plan,
-        '1',
-        `$${invoice.amount.toFixed(2)}`,
-        `$${invoice.amount.toFixed(2)}`
-      ]],
-      headStyles: {
-        fillColor: [0, 43, 150],
-        textColor: [255, 255, 255],
-        fontSize: 12
+   // Add invoice title
+   doc.setTextColor(0, 0, 0);
+   doc.setFontSize(24);
+   doc.text('INVOICE', 185, 90, { align: 'right' });
+
+   doc.setTextColor(0, 0, 0);
+   doc.setFontSize(14);
+   doc.text(`${invoice.invoiceNumber}`, 185, 97, { align: 'right' });
+   
+   // Add date
+   doc.setFontSize(12);
+   doc.text(`Date : ${dateFormatToDay(new Date())}`, 185, 103, { align: 'right' });
+   
+      // Add invoice details
+      doc.setFontSize(14);
+      doc.text('INVOICE TO:', 20, 90);
+      doc.setFontSize(12);
+      doc.text(invoice.clientName, 20, 97);
+      doc.setFontSize(12);
+      doc.text(invoice.clientAddress, 20, 103);
+   
+      const tableHeaders = [
+       { title: 'Description', dataKey: 'description', width: 80 },
+       { title: 'Qty', dataKey: 'quantity', width: 20 },
+       { title: 'Price (Rs)', dataKey: 'price', width: 40, align: 'right' },
+       { title: 'Total (Rs)', dataKey: 'total', width: 40, align: 'right' },
+     ];
+   
+     const tableBody = [
+      
+       invoice.subscription_plan.name,
+       '1',
+     `${invoice.subscription_plan.price.toFixed(2)}`,
+       `${invoice.subscription_plan.price.toFixed(2)}`
+     
+      ]
+   
+      // Add plan details table
+      doc.autoTable(
+       {
+        startY: 130,
+        margin: { top: 10 },
+        head: [tableHeaders],
+        body: [tableBody],
+        styles: {
+         fontSize: 10,
+         cellPadding: 5,
+         overflow: 'ellipsize',
+         halign: 'center',
+         valign: 'middle',
+       },
+       headStyles: {
+         fillColor: [221, 221, 221], // Light gray background for header
+         textColor: [0, 0, 0],
+         fontSize: 11,
+         fontStyle: 'bold',
+       },
+       columns: tableHeaders,
+        theme: 'grid'
       },
-      styles: {
-        fontSize: 12,
-        cellPadding: 8
-      },
-      theme: 'grid'
-    });
-
-    // Add subtotal and tax
-    const finalY = (doc).lastAutoTable.finalY || 180;
-    doc.text('Total AMount:', 110, finalY + 20);
-    doc.text(`$${(invoice.amount).toFixed(2)}`, 170, finalY + 20);
+      
+     
+     );
+   
+      // Add subtotal and tax
+      const finalY = (doc).lastAutoTable.finalY || 180;
+      doc.setFontSize(16);
+      doc.text('Total Amount:', 110, finalY + 20);
+      doc.setFontSize(16);
+      doc.text(`Rs.${(invoice.subscription_plan.price).toFixed(2)}`, 160, finalY + 20);
+     
+      
+     
    
     
    
-
-  
-
-    // Add contact information
-    const contactY = finalY + 70;
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    
-    // Phone
-    doc.text('Phone.', 20, contactY);
-    doc.setTextColor(100, 100, 100);
-    doc.text('+91 98472 74569', 20, contactY + 10);
-    
-    // Email
-    doc.setTextColor(0, 0, 0);
-    doc.text('Email.', 85, contactY);
-    doc.setTextColor(100, 100, 100);
-    doc.text('mcodevbiz@gmail.com', 85, contactY + 10);
-    
+      // Add contact information
+      const contactY = finalY + 100;
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      
+      // Phone
+      doc.text('Phone.', 20, contactY);
+      doc.setTextColor(100, 100, 100);
+      doc.text('+91 98472 74569', 20, contactY + 10);
+      
+      // Email
+      doc.setTextColor(0, 0, 0);
+      doc.text('Email.', 85, contactY);
+      doc.setTextColor(100, 100, 100);
+      doc.text('mcodevbiz@gmail.com', 85, contactY + 10);
    
-
-    // Add bottom wave pattern
-    doc.setFillColor(0, 43, 150);
-    doc.rect(0, 280, 210, 17, 'F');
-    
-    // Save the PDF
-    doc.save(`Invoice-${invoice.id}.pdf`);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Address.', 150, contactY);
+      doc.setTextColor(100, 100, 100);
+      doc.text('Kerala,India', 150, contactY + 10);
+      
+     
+   
+      // Add bottom wave pattern
+      doc.setFillColor(0, 43, 150);
+      doc.rect(0, 280, 210, 17, 'F');
+      
+      // Save the PDF
+      doc.save(`${invoice.invoiceNumber}.pdf`);
   };
 
   const [activeTab, setActiveTab] = useState('invoices')
@@ -340,6 +370,7 @@ function DashPage() {
         paymentId: invoice.paymentId,
         amount: invoice.subscription_plan.price,
         documentId:invoice.documentId,
+        subscription_plan:invoice.subscription_plan,
         status: invoice.transactionStatus,
         paymentStatus: invoice.paymentStatus,
         clientName: invoice.clientName,
@@ -432,7 +463,7 @@ function DashPage() {
             <CardTitle className="text-sm font-medium">Total Paid Amount</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${data.totalPaidAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{data.totalPaidAmount.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card>
@@ -440,7 +471,7 @@ function DashPage() {
             <CardTitle className="text-sm font-medium">Total Invoice Amount</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${data.totalInvoiceAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{data.totalInvoiceAmount.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card>
@@ -448,7 +479,7 @@ function DashPage() {
             <CardTitle className="text-sm font-medium">Pending Invoice Amount</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${data.pendingInvoiceAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{data.pendingInvoiceAmount.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card>
@@ -456,7 +487,7 @@ function DashPage() {
             <CardTitle className="text-sm font-medium">Today's Amount</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${data.todayAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{data.todayAmount.toLocaleString()}</div>
           </CardContent>
         </Card>
       </div>
@@ -479,7 +510,7 @@ function DashPage() {
                 <TableRow key={payment.id}>
                   <TableCell>{payment.date}</TableCell>
                   <TableCell>{payment.customer}</TableCell>
-                  <TableCell className="text-right">${payment.amount.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">₹{payment.amount.toLocaleString()}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -519,7 +550,7 @@ function DashPage() {
                 <TableCell>{invoice.plan}</TableCell>
                 <TableCell>{invoice.date}</TableCell>
                 <TableCell>{invoice.paymentId}</TableCell>
-                <TableCell>${invoice.amount.toFixed(2)}</TableCell>
+                <TableCell>₹{invoice.amount.toFixed(2)}</TableCell>
                 <TableCell>
                   <Select 
                     onValueChange={(value) => handleStatusChange(invoice.id, value, 'status')}
@@ -603,7 +634,7 @@ function DashPage() {
                  <Edit className="h-4 w-4" />
                </Button>
              </div>
-             <CardDescription>${plan.price}/{plan.category}</CardDescription>
+             <CardDescription>₹{plan.price}/{plan.category}</CardDescription>
            </CardHeader>
            <CardContent>
              <ul className="list-disc list-inside">
