@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import PaymentPage from "@/components/PaymentPage";
 import axios from "axios";
 import Cookies from "js-cookie";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export async function getServerSideProps(context) {
     const { id, planDemo, redirectUrl, pt } = context.query;
@@ -62,12 +64,14 @@ console.log(res.data.data[0]);
   },[])
   
 return (
+ 
 
   <>
-  
+  <Header/>
   {
     invoice && <PaymentPage params={{ id, planDemo, redirectUrl, price,invoice }}/>
   }
+   <Footer/>
   </>
   
 )

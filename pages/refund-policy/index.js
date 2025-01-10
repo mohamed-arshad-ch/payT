@@ -2,6 +2,8 @@
 import DashPage from '@/components/dash';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import RefundPolicy from '@/components/RefundPolicy';
+import TermsConditions from '@/components/TermsConditions';
 import { withAuth } from '@/lib/withAuth';
 
 
@@ -9,15 +11,15 @@ import { withAuth } from '@/lib/withAuth';
 
 
 
-function InvoicesPage() {
+function RefundPolicyPage() {
     return (
         <>
         <Header/>
-        <DashPage/>
+        <RefundPolicy/>
         <Footer/>
         </>
      )
 }
 
 
-export default withAuth(InvoicesPage)
+export default RefundPolicyPage

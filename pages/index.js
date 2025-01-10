@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import Cookies from "js-cookie";
 import CryptoJS from "crypto-js";
 import axios from "axios";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   const [username, setUsername] = useState('');
@@ -38,6 +40,9 @@ export default function Home() {
   };
 
   return (
+    <>
+    <Header/>
+
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader>
@@ -74,5 +79,8 @@ export default function Home() {
         </CardContent>
       </Card>
     </div>
+    <Footer/>
+    </>
+    
   );
 }

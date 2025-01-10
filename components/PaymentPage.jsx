@@ -417,7 +417,7 @@ function PaymentAlreadyDonePage() {
 
         <div
          
-          className="w-full max-w-md px-4 md:px-6">
+          className="w-full max-w-lg px-4 md:px-6">
           <Card className="shadow-lg">
             <CardHeader className="text-center">
               <div

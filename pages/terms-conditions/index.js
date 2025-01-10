@@ -2,6 +2,7 @@
 import DashPage from '@/components/dash';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import TermsConditions from '@/components/TermsConditions';
 import { withAuth } from '@/lib/withAuth';
 
 
@@ -9,15 +10,15 @@ import { withAuth } from '@/lib/withAuth';
 
 
 
-function InvoicesPage() {
+function TermsConditionPage() {
     return (
         <>
         <Header/>
-        <DashPage/>
+        <TermsConditions/>
         <Footer/>
         </>
      )
 }
 
 
-export default withAuth(InvoicesPage)
+export default TermsConditionPage
