@@ -318,7 +318,7 @@ function DashPage() {
       await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/subscription-plans/${updatedPlan.documentId}`, {
         data: {
           name:updatedPlan.name,
-          "price":updatedPlan.price,
+          "price":calculateTotalAmount(updatedPlan.price),
         "features":updatedPlan.features,
         "category":updatedPlan.category
 
@@ -704,6 +704,19 @@ function DashPage() {
   );
 }
 
+function calculateTotalAmount(amount) {
+  // Calculate 2% of the amount
+  const twoPercent = Number(amount) * 0.02;
+
+  // Calculate 18% tax on the 2% amount
+  const tax = twoPercent * 0.18;
+
+  // Calculate the total amount
+  const totalAmount = Number(amount) + twoPercent + tax;
+
+  return totalAmount;
+}
+
 function AddPlanForm({ onSubmit }) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -717,7 +730,7 @@ function AddPlanForm({ onSubmit }) {
     e.preventDefault();
     onSubmit({
       name,
-      price: parseFloat(price),
+      price: calculateTotalAmount(parseFloat(price)),
       features: features.split('\n').filter(f => f.trim()),
       category
     });
